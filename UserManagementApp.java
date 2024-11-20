@@ -127,26 +127,21 @@ public class UserManagementApp extends Application {
 	private void specialAccessPage(Stage stage)	{
 		VBox layout = new VBox(10);
 		layout.setPadding(new Insets(20,20,20,20));
-		
-		Label lbArticles = new Label("List articles in this group.");
-		Button btArticles = new Button("List Articles");
-		
-		Label lbAdmins = new Label("List admins given rights to this group.");
-		Button btAdmins = new Button("List Admins");
-		
-		Label lbInstructors = new Label("List instructors given viewing rights to this group.");
-		Button btInstructors = new Button("List Instructors");
-		
-		Label lbAdminInstructors = new Label("List instructors given rights to this group.");
-		Button btAdminInstructors = new Button("List Instructors");
-		
-		Label lbStudents = new Label("List students given viewing rights to this group.");
-		Button btStudents = new Button("List Students");
+
+		Button btArticles = new Button("List articles in this group");
+
+		Button btAdmins = new Button("List admins given rights to this group");
+
+		Button btInstructors = new Button("List instructors given viewing rights to this group");
+
+		Button btAdminInstructors = new Button("List instructors given rights to this group");
+
+		Button btStudents = new Button("List students given viewing rights to this group");
 		
 		Button goBack = new Button("Go Back");
 		goBack.setOnAction(e ->showAdminPage(stage, "admin"));
 		
-		layout.getChildren().addAll(lbArticles,btArticles,lbAdmins,btAdmins,lbInstructors,btInstructors,lbAdminInstructors,btAdminInstructors,lbStudents,btStudents,goBack);
+		layout.getChildren().addAll(btArticles,btAdmins,btInstructors,btAdminInstructors,btStudents,goBack);
 		Scene scene = new Scene(layout, 400, 400);
 		stage.setScene(scene);
 		stage.show();
@@ -156,9 +151,27 @@ public class UserManagementApp extends Application {
 		VBox layout = new VBox(10);
 		layout.setPadding(new Insets(20,20,20,20));
 		
-		Label title = new Label("Welcome to the help system");
-		Label search = new Label("What key words would you like to search?");
+		String[] type = {"General", "Specific"};
+		ComboBox<String> comboBox = new ComboBox<>(FXCollections.observableArrayList(type));
+		comboBox.getSelectionModel().selectFirst();
+		String[] returnType = {"All","Beginner", "Intermediate", "Advanced", "Expert"};
+		ComboBox<String> returnBox = new ComboBox<>(FXCollections.observableArrayList(returnType));
+		returnBox.getSelectionModel().selectFirst();
 		
+		Label title = new Label("Welcome to the help system.");
+		Label lbtype = new Label("Please select the type of message you need help with\nand level of content you would like to see.");
+		Label search = new Label("Enter your message below.");
+		TextField help = new TextField();
+		help.setPromptText("Enter your message here.");
+		Button submit = new Button("Submit");
+		Button goBack = new Button("Go Back");
+		goBack.setOnAction(e ->showAdminPage(stage, "admin"));
+		Button list = new Button("List request history");
+		
+		layout.getChildren().addAll(title,lbtype,comboBox,returnBox,search,help,submit,list,goBack);
+		Scene scene = new Scene(layout, 400, 400);
+		stage.setScene(scene);
+		stage.show();
 	}
 	
 	private void articleHomePage(Stage stage)	{
@@ -246,7 +259,7 @@ public class UserManagementApp extends Application {
 			}		
 		});
 		
-		layout.getChildren().addAll(action,listArticles,createArticle,deleteArticleInput,deleteArticle,viewArticleInput,viewArticle, viewByGroupTf, viewByGroup, backup, restore, backupByGroup, backupGroup, restoreByGroup, restoreGroup);
+		layout.getChildren().addAll(action,listArticles,createArticle,deleteArticleInput,deleteArticle,viewArticleInput,viewArticle, viewByGroupTf, viewByGroup, backup, restore, backupByGroup, backupGroup, restoreByGroup, restoreGroup,goBack);
 		Scene scene = new Scene(layout, 500, 600);
 		stage.setScene(scene);
 		stage.show();
@@ -759,13 +772,15 @@ public class UserManagementApp extends Application {
 		layout.setPadding(new Insets(20, 20, 20, 20));
 
 		Label welcomeLabel = new Label("Welcome, " + currentUser.getDisplayName() + " (" + role + ")");
+		Button helpSystem = new Button("Help System");
 		Button logoutButton = new Button("Log Out");
+		helpSystem.setOnAction(e-> helpSystemPage(stage));
 		logoutButton.setOnAction(e -> {
 			currentUser = null;
 			showLoginPage(stage);
 		});
 
-		layout.getChildren().addAll(welcomeLabel, logoutButton);
+		layout.getChildren().addAll(welcomeLabel,helpSystem,logoutButton);
 		Scene scene = new Scene(layout, 300, 200);
 		stage.setScene(scene);
 	}
