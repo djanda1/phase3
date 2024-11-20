@@ -845,6 +845,9 @@ public class UserManagementApp extends Application {
 		Button logoutButton = new Button("Log Out");
 		Button helpSystem = new Button("Help System");
 		Button quit = new Button("Save and Exit");
+		Button search = new Button("Search for Articles");
+		
+		//button actions
 		logoutButton.setOnAction(e -> {			//logout of student account will lead back to login page
 			currentUser = null;
 			showLoginPage(stage);
@@ -855,15 +858,189 @@ public class UserManagementApp extends Application {
 			currentUser = null;
 			showLoginPage(stage);
 		});
+		search.setOnAction(e -> studentSearchPage(stage));
+		
 		quit.setOnAction(e ->{
 			save();
 			Platform.exit();
 		});
 		
-		layout.getChildren().addAll(welcomeLabel, helpSystem, logoutButton, quit);
-		Scene scene = new Scene(layout, 300, 200);
+		layout.getChildren().addAll(welcomeLabel, helpSystem, search, logoutButton, quit);
+		Scene scene = new Scene(layout, 400, 400);
 		stage.setScene(scene);
 	}
+	
+	private void studentSearchPage(Stage stage)
+	{
+		VBox layout = new VBox(10);
+		layout.setPadding(new Insets(20,20,20,20));
+		
+		String[] levels = {"All", "Beginner", "Intermediate", "Advanced", "Expert"};		//combo box values
+		
+		//Page elements
+		Label prompt = new Label("Please provide the details for your search");
+		ComboBox<String> levelCB = new ComboBox<>(FXCollections.observableArrayList(levels));		//combo box for them to choose level
+		levelCB.getSelectionModel().selectFirst();
+		Label searchLabel = new Label("Enter Keywords for your search");
+		TextField userSearch = new TextField();
+		Label groupLabel = new Label("Enter the group you wish to search or leave blank to search all groups");
+		TextField groupSearch = new TextField();
+		Label idLabel = new Label("Enter id for specific aritcle (Optional)");
+		TextField idTF = new TextField("0");
+		Button search = new Button("Search");
+		Button goBack = new Button("Go back");
+		
+		//button action
+		search.setOnAction(e ->{
+			String l = levelCB.getValue();
+			String g = groupSearch.getText();
+			String k = userSearch.getText();
+			int id = Integer.parseInt(idTF.getText());
+			Map<String, Articles> map = returnSearch(l, g, k, id);
+			if(map.size() > 0)
+				searchResultPage(stage, map);
+			else
+				showAlert("Error", "No results found");
+		});
+		
+		goBack.setOnAction(e -> showHomePageStudent(stage, "student"));
+		
+		layout.getChildren().addAll(prompt, levelCB, groupLabel, groupSearch, searchLabel, userSearch, idLabel, idTF, search, goBack);
+		Scene scene = new Scene(layout, 500, 500);
+		stage.setScene(scene);
+	}
+	
+	
+	
+	private void searchResultPage(Stage stage, Map<String, Articles> artMap)
+	{
+		//vertical box for page elements
+		VBox layout = new VBox(10);
+		layout.setPadding(new Insets(20,20,20,20));
+		
+		//page elements
+		ObservableList<Articles> articleList = FXCollections.observableArrayList(artMap.values());
+		ListView<Articles> listView = new ListView<>(articleList);
+		Label prompt = new Label("Enter the number of the article you wish to see");
+		TextField tf = new TextField("0");
+		Button view = new Button("View Article");
+		Button goBack = new Button("Go back to search page");
+		
+		//button actions
+		goBack.setOnAction(e -> {
+			studentSearchPage(stage);
+			});
+		
+		view.setOnAction(e -> {
+			int i = Integer.parseInt(tf.getText());
+			if(i > 0)
+			{
+				Articles temp;
+				for(Map.Entry<String, Articles> entry : artMap.entrySet())
+				{
+					temp = entry.getValue();
+					if(temp.getIdForSearch() == i)
+						viewArticle(stage, temp, artMap);
+				}
+			}
+			else
+				showAlert("Error", "Could not find article");
+		});
+		
+		//set scene
+		layout.getChildren().addAll(listView, prompt, tf, view, goBack);
+		Scene scene = new Scene(layout, 400, 400);
+		stage.setScene(scene);
+		stage.show();
+		
+	}
+	
+	private void viewArticle(Stage stage, Articles art, Map<String, Articles> searchResult)
+	{
+		//vertical box to hold elemetns
+		VBox layout = new VBox(10);
+		layout.setPadding(new Insets(20,20,20,20));
+		
+		//page elements
+		Label artLabel = new Label(art.getTitle());
+		
+		
+		Button goBack = new Button("Go Back");
+		
+		//button action
+		goBack.setOnAction(e ->searchResultPage(stage, searchResult));
+		
+		//set the scene
+		layout.getChildren().addAll(artLabel, goBack);
+		Scene scene = new Scene(layout, 400, 400);
+		stage.setScene(scene);
+		stage.show();
+	}
+	
+	private Map<String, Articles> returnSearch(String level, String group, String keyword, int id)
+	{
+		Map<String, Articles> artMap = new HashMap<>();
+		Articles temp;
+		int i = 1;
+		for(Map.Entry<String, Articles> entry : articles.entrySet())
+		{
+			temp = entry.getValue();
+			if( (level.equalsIgnoreCase("All") || level.equalsIgnoreCase(temp.getLevel())) && (group.equals("") || (group.equalsIgnoreCase(temp.getGroup())))) 		//if article matches group or level user inputed
+			{
+				String des = temp.getDescription();
+				String t = temp.getTitle();
+				String a = temp.getAuthors();
+				String key = temp.getKeywords();
+				
+				
+				if( (!keyword.equals("")) && ((findSubstring(des, keyword) >= 0) || (findSubstring(t, keyword) >= 0) || (findSubstring(a, keyword) >= 0) || (findSubstring(key, keyword) >= 0)))		//if article contains any substring with keyword student produced
+				{
+					temp.setIdForSearch(i);
+					artMap.put(temp.getTitle(), temp);
+					i++;
+				}
+			}
+			
+			if(id > 0)				//check if id user provided == id for articles
+			{
+				if(id == temp.getId())
+				{
+					temp.setIdForSearch(i);
+					artMap.put(temp.getTitle(), temp);
+					i++;
+				}
+			}
+			
+			
+			
+		}
+		
+		return artMap;
+	}
+	
+	private int findSubstring(String full, String sub)		//function to check if sub is a substring of full
+	{
+		int n = full.length();
+		int m = sub.length();
+		
+		
+		for(int i = 0; i <= n - m; i++)				//iterate through full string	
+		{
+			int j;
+			for(j = 0; j < m; j++)					//iterate through sub and full if they don't match move on
+			{
+				if(Character.toLowerCase(full.charAt(i + j)) != Character.toLowerCase(sub.charAt(j)))
+					break;
+			}
+			
+			if(j == m) 
+			{
+				return i;
+			}
+		}
+		return -1;		//if they don't match return -1
+	}
+	
 
 	private void showAlert(String title, String message) {		//alert method to be able to let user know if any errors
 		Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -877,6 +1054,10 @@ public class UserManagementApp extends Application {
 	{
 		VBox layout = new VBox(10);
 		layout.setPadding(new Insets(20,20,20,20));
+		
+		String[] levels = {"Beginner", "Intermediate", "Advanced", "Expert"};	//strings for combo box to determine level
+		
+		//Page elements
 		Label prompt = new Label("Please fill out article's information: ");		//prompts to add article
 		TextField titleTf = new TextField();
 		TextField authorsTf = new TextField();
@@ -885,6 +1066,8 @@ public class UserManagementApp extends Application {
 		TextField descriptionTf = new TextField();
 		TextField referencesTf = new TextField();
 		TextField groupTf = new TextField();
+		ComboBox<String> levelCB = new ComboBox<>(FXCollections.observableArrayList(levels));
+		levelCB.getSelectionModel().selectFirst();
 		titleTf.setPromptText("Enter the title of the article");
 		authorsTf.setPromptText("Enter the author(s) of the article");
 		bodyTf.setPromptText("Enter the body of the article");
@@ -894,6 +1077,8 @@ public class UserManagementApp extends Application {
 		groupTf.setPromptText("Enter the group of the article");
 		Button addButt = new Button("Submit Article");
 		Button goBack = new Button("Go Back");
+		
+		//button actions
 		addButt.setOnAction(e -> {				//add article button action
 			String t = titleTf.getText();
 			String a = authorsTf.getText();
@@ -902,12 +1087,13 @@ public class UserManagementApp extends Application {
 			String d = keywordsTf.getText();
 			String r = referencesTf.getText();
 			String g = groupTf.getText();
+			String l = levelCB.getValue();
 			try {
 			if(!t.equals("") && !a.equals("") && !b.equals("") && !k.equals("") && !d.equals("") && !r.equals("") && !g.equals(""))		//if textfields are filled out
 			{
 				String encryptedBody = Base64.getEncoder().encodeToString(
 						encryptionHelper.encrypt(b.getBytes(), EncryptionUtils.getInitializationVector(t.toCharArray())));
-				Articles newArticle = new Articles(t, d, k, a, encryptedBody, r, g);
+				Articles newArticle = new Articles(t, d, k, a, encryptedBody, r, g, l);
 				if(articles.get(t) == null)			//if article is unique then add it to system else show error
 				{
 					articles.put(t, newArticle);
@@ -934,7 +1120,7 @@ public class UserManagementApp extends Application {
 		//button actions
 		goBack.setOnAction(e ->articleHomePage(stage));
 		
-		layout.getChildren().addAll(prompt, titleTf, authorsTf, bodyTf, keywordsTf, descriptionTf, referencesTf, groupTf, addButt, goBack);
+		layout.getChildren().addAll(prompt, titleTf, authorsTf, bodyTf, keywordsTf, descriptionTf, referencesTf, groupTf, levelCB, addButt, goBack);
 		Scene scene = new Scene(layout, 500, 500);
 		stage.setScene(scene);
 		
@@ -1055,6 +1241,8 @@ public class UserManagementApp extends Application {
 		    	  myWriter.newLine();
 		    	  myWriter.write(tempA.getReferences());
 		    	  myWriter.newLine();
+		    	  myWriter.write(tempA.getLevel());
+		    	  myWriter.newLine();
 		    	  
 		      }
 		      myWriter.close();
@@ -1133,7 +1321,9 @@ public class UserManagementApp extends Application {
 		        	String k = line;
 		        	line = reader.nextLine();
 		        	String r = line;
-		        	Articles newArt = new Articles(t, d, k, a, b, r, g);
+		        	line = reader.nextLine();
+		        	String l = line;
+		        	Articles newArt = new Articles(t, d, k, a, b, r, g, l);
 		        	articles.put(t, newArt);
 		        }
 		        reader.close();
@@ -1192,6 +1382,8 @@ public class UserManagementApp extends Application {
 	    	  myWriter.newLine();
 	    	  myWriter.write(tempA.getReferences());
 	    	  myWriter.newLine();
+	    	  myWriter.write(tempA.getLevel());
+	    	  myWriter.newLine();
 	    	  
 	      }
 	      myWriter.close();
@@ -1235,6 +1427,8 @@ public class UserManagementApp extends Application {
 		    		  myWriter.newLine();
 		    		  myWriter.write(tempA.getReferences());
 		    		  myWriter.newLine();
+		    		  myWriter.write(tempA.getLevel());
+		    		  myWriter.newLine();
 		    	  }
 		      }
 			myWriter.close();
@@ -1276,7 +1470,9 @@ public class UserManagementApp extends Application {
 		        	String k = line;
 		        	line = reader.nextLine();
 		        	String r = line;
-		        	Articles newArt = new Articles(t, d, k, a, b, r, g);
+		        	line = reader.nextLine();
+		        	String l = line;
+		        	Articles newArt = new Articles(t, d, k, a, b, r, g, l);
 		        	if(articles.get(t) == null)				//only restore article if it does not already exist in real time system
 		        		articles.put(t, newArt);
 		        }
@@ -1318,7 +1514,9 @@ public class UserManagementApp extends Application {
 		        	String k = line;
 		        	line = reader.nextLine();
 		        	String r = line;
-		        	Articles newArt = new Articles(t, d, k, a, b, r, g);
+		        	line = reader.nextLine();
+		        	String l = line;
+		        	Articles newArt = new Articles(t, d, k, a, b, r, g, l);
 		        	if(articles.get(t) == null)				//only restore article if it does not already exist in real time system
 		        		articles.put(t, newArt);
 		        }
