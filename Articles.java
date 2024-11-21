@@ -1,24 +1,22 @@
-
 package application;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 
 public class Articles {
-	private String title, description, keywords, authors, body, references, group;
+	private String title, description, keywords, authors, body, references, group, level;
+	private int id, idForSearch;
 	private boolean special;
-	private int id;
-    private Set<String> allowedUsers;
-
-	
+	private Set<String> allowedUsers;
 	//default constructor
 	public Articles()
 	{
-		this.allowedUsers = new HashSet<>(); //initialize set
 	}
 	
 	//overloaded constructor
-	public Articles(String title, String description, String keywords, String authors, String body, String references, String group, boolean special)
+	public Articles(String title, String description, String keywords, String authors, String body, String references, String group, String level, boolean special)
 	{
 		this.title = title;
 		this.authors = authors;
@@ -26,23 +24,50 @@ public class Articles {
 		this.keywords = keywords;
 		this.description = description;
 		this.references = references;
-		this.special = special;
 		id = 0;
-		this.allowedUsers = new HashSet<>(); //initialize set
+		this.special = special;
+		this.allowedUsers = new HashSet<String>();
 		for(int i = 0; i < title.length(); i++)
 		{
 			char ch = title.charAt(i);
 			this.id += (int)ch;
 		}
 		this.group = group;
+		this.level = level;
 	}
 	
 	
 	//accessors
+	public boolean isSpecial()
+	{
+		return this.special;
+	}
+	
 	public String getTitle()
 	{
 		return this.title;
 	}
+	
+	public void setSpecial(boolean special)
+	{
+		this.special = special;
+	}
+	
+	public void addAllowedUser(String username) {
+        this.allowedUsers.add(username);
+    }
+    
+    public void setAllowedUsers(String allowedUsers) {
+        this.allowedUsers.add(allowedUsers);
+    }
+    
+    public Set<String> getAllowedUsers() {
+        return allowedUsers;
+    }
+    
+    public boolean isUserAllowed(String username) {
+        return this.allowedUsers.contains(username);
+    }
 	
 	public String getDescription()
 	{
@@ -84,39 +109,67 @@ public class Articles {
 		this.body = body;
 	}
 	
-	public boolean isSpecial() 
+	public String getLevel()
 	{
-        return this.special;
-    }
-
-    public void setSpecial(boolean special) 
-    { 
-        this.special = special;
-    }
-    
-    public void addAllowedUser(String username) {
-        this.allowedUsers.add(username);
-    }
-    
-    public void setAllowedUsers(Set<String> allowedUsers) {
-        this.allowedUsers = allowedUsers;
-    }
-    
-    public Set<String> getAllowedUsers() {
-        return allowedUsers;
-    }
-    
-    public boolean isUserAllowed(String username) {
-        return this.allowedUsers.contains(username);
-    }
-    
+		return this.level;
+	}
+	
+	public int getIdForSearch()
+	{
+		return this.idForSearch;
+	}
+	
+	public void setIdForSearch(int i)
+	{
+		this.idForSearch = i;
+	}
+	
+	public void setTitle(String title)
+	{
+		this.title = title;
+	}
+	
+	public void setDescription(String d) {
+		this.description = d;
+	}
+	
+	public void setKeywords(String k)
+	{
+		this.keywords = k;
+	}
+	
+	public void setAuthor(String a)
+	{
+		this.authors = a;
+	}
+	
+	public void setReferences(String r)
+	{
+		this.references = r;
+	}
+	
+	public void setGroup(String g)
+	{
+		this.group = g;
+	}
+	
+	public void setLevel(String l)
+	{
+		this.level = l;
+	}
 	public String toString()
 	{
-		return "Title: " + this.title + "\n"
+		String text = "";
+		
+		if(idForSearch > 0)
+			text += this.idForSearch + "\n";
+		text += "Title: " + this.title + "\n"
 				+ "Authors: " + this.authors + "\n"
 				+ "Description: " + this.description + "\n"
 				+ "Group: " + this.group + "\n"
-				+ "ID: " + this.id + "\n";
+				+ "ID: " + this.id + "\n"
+				+ "Level: " + this.level + "\n";
+		return text;
 	}
 	
 	public String toStringFull()
