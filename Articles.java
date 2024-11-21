@@ -1,17 +1,18 @@
-
 package application;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Articles {
-	private String title, description, keywords, authors, body, references, group;
-	private int id;
-	
+	private String title, description, keywords, authors, body, references, group, level;
+	private int id, idForSearch;
 	//default constructor
 	public Articles()
 	{
 	}
 	
 	//overloaded constructor
-	public Articles(String title, String description, String keywords, String authors, String body, String references, String group)
+	public Articles(String title, String description, String keywords, String authors, String body, String references, String group, String level)
 	{
 		this.title = title;
 		this.authors = authors;
@@ -26,6 +27,7 @@ public class Articles {
 			this.id += (int)ch;
 		}
 		this.group = group;
+		this.level = level;
 	}
 	
 	
@@ -75,13 +77,33 @@ public class Articles {
 		this.body = body;
 	}
 	
+	public String getLevel()
+	{
+		return this.level;
+	}
+	
+	public int getIdForSearch()
+	{
+		return this.idForSearch;
+	}
+	
+	public void setIdForSearch(int i)
+	{
+		this.idForSearch = i;
+	}
 	public String toString()
 	{
-		return "Title: " + this.title + "\n"
+		String text = "";
+		
+		if(idForSearch > 0)
+			text += this.idForSearch + "\n";
+		text += "Title: " + this.title + "\n"
 				+ "Authors: " + this.authors + "\n"
 				+ "Description: " + this.description + "\n"
 				+ "Group: " + this.group + "\n"
-				+ "ID: " + this.id + "\n";
+				+ "ID: " + this.id + "\n"
+				+ "Level: " + this.level + "\n";
+		return text;
 	}
 	
 	public String toStringFull()
