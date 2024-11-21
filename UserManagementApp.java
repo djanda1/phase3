@@ -176,15 +176,20 @@ public class UserManagementApp extends Application {
 		help.setPromptText("Enter your message here.");
 		Button submit = new Button("Submit");
 		submit.setOnAction(e -> {
-			saveRequest(comboBox.getValue(), returnBox.getValue(), help.getText());
-			showAlert("Success", "Your request was successfully submitted please be patient while admins take a look at your request.");
-			showHomePageStudent(stage, "student");
+			String txt = help.getText();
+			if(!txt.equals("")) 
+			{
+				saveRequest(comboBox.getValue(), returnBox.getValue(), txt);
+				showAlert("Success", "Your request was successfully submitted please be patient while admins take a look at your request.");
+				showHomePageStudent(stage, "student");
+			}
+			else
+				showAlert("Error", "No information provided");
 		});
 		Button goBack = new Button("Go Back");
 		goBack.setOnAction(e ->showHomePageStudent(stage, "student"));
-		Button list = new Button("List request history");
 
-		layout.getChildren().addAll(title,lbtype,comboBox,returnBox,search,help,submit,list,goBack);
+		layout.getChildren().addAll(title,lbtype,comboBox,returnBox,search,help,submit,goBack);
 		Scene scene = new Scene(layout, 400, 400);
 		stage.setScene(scene);
 		stage.show();
@@ -922,7 +927,8 @@ public class UserManagementApp extends Application {
 		ObservableList<Articles> articleList = FXCollections.observableArrayList(artMap.values());
 		ListView<Articles> listView = new ListView<>(articleList);
 		Label prompt = new Label("Enter the number of the article you wish to see");
-		TextField tf = new TextField("0");
+		TextField tf = new TextField();
+		tf.setPromptText("Choose list number of article you wish to see");
 		Button view = new Button("View Article");
 		Button goBack = new Button("Go back to search page");
 		
@@ -963,15 +969,33 @@ public class UserManagementApp extends Application {
 		
 		//page elements
 		Label artLabel = new Label(art.getTitle());
+		String encryptedBody = art.getBody();
+		char[] decryptedBody;
+		try {
+		decryptedBody = EncryptionUtils.toCharArray(				//decrypt the body to show in gui
+				encryptionHelper.decrypt(
+						Base64.getDecoder().decode(
+								encryptedBody
+						), 
+						EncryptionUtils.getInitializationVector(art.getTitle().toCharArray())
+				)	
+		);
+		}
+		catch (Exception e) {
+			showAlert("Error", e.toString());
+			decryptedBody = null;
+		}
 		
 		
 		Button goBack = new Button("Go Back");
-		
+		String text = String.valueOf(decryptedBody);
+		Arrays.fill(decryptedBody, '0');     				//fill decrypted array with 0 to prevent leaks
+		TextArea ta = new TextArea(text);
 		//button action
 		goBack.setOnAction(e ->searchResultPage(stage, searchResult));
 		
 		//set the scene
-		layout.getChildren().addAll(artLabel, goBack);
+		layout.getChildren().addAll(artLabel, ta, goBack);
 		Scene scene = new Scene(layout, 400, 400);
 		stage.setScene(scene);
 		stage.show();
@@ -994,6 +1018,12 @@ public class UserManagementApp extends Application {
 				
 				
 				if( (!keyword.equals("")) && ((findSubstring(des, keyword) >= 0) || (findSubstring(t, keyword) >= 0) || (findSubstring(a, keyword) >= 0) || (findSubstring(key, keyword) >= 0)))		//if article contains any substring with keyword student produced
+				{
+					temp.setIdForSearch(i);
+					artMap.put(temp.getTitle(), temp);
+					i++;
+				}
+				else if((keyword.equals("")))
 				{
 					temp.setIdForSearch(i);
 					artMap.put(temp.getTitle(), temp);
