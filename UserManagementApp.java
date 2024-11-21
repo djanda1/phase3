@@ -245,8 +245,9 @@ public class UserManagementApp extends Application {
 		Button listArticles = new Button("List Articles");
 		Button createArticle = new Button("Create");
 		Button deleteArticle = new Button("Delete");
-		Button search = new Button("Search Articles");
+		Button viewArticle = new Button("View Article");
 		Button goBack = new Button("Go Back");
+		Button viewByGroup = new Button("View articles by group");
 		Button backup = new Button("Backup all articles");
 		Button restore = new Button("Restore all articles from backup");
 		Button backupGroup = new Button("Backup Group");
@@ -254,22 +255,44 @@ public class UserManagementApp extends Application {
 		Button editArticles = new Button("Edit Articles");
 		//text fields for buttons
 		TextField deleteArticleInput = new TextField();
+		TextField viewArticleInput = new TextField();
+		TextField viewByGroupTf = new TextField();
 		TextField backupByGroup = new TextField();
 		TextField restoreByGroup = new TextField();
 		//Set prompts for text fields
 		backupByGroup.setPromptText("Enter the group you wish to backup");
 		deleteArticleInput.setPromptText("Enter the title of the article you wish to delete");
+		viewArticleInput.setPromptText("Enter the title of the article you wish to view");
+		viewByGroupTf.setPromptText("Enter the group you wish to view");
 		restoreByGroup.setPromptText("Enter the group you wish to restore");
 		
 		//button actions
-		editArticles.setOnAction(e ->editArticlePage(stage));
+		editArticles.setOnAction(e -> editArticlePage(stage));
 		if(currentUser.getRoles().get(0).equals("Admin"))
 			goBack.setOnAction(e ->showAdminPage(stage, "admin"));
 		else if(currentUser.getRoles().get(0).equals("Instructor"))
 			goBack.setOnAction(e ->showHomePageInstructor(stage, "Instructor"));
+		viewArticle.setOnAction(e -> {
+			String name = viewArticleInput.getText();
+			Articles articleName = articles.get(name);
+			if(articleName != null)
+			{
+				articleWindow(stage, name);
+			}
+			else
+				showAlert("Error", "The article you entered does not exist");
+		});
 		createArticle.setOnAction(e -> createArticlePage(stage));
 		listArticles.setOnAction(e -> listArticles(stage));
-		search.setOnAction(e -> studentSearchPage(stage));
+		viewByGroup.setOnAction(e -> {
+			if(viewByGroupTf.getText().isEmpty())	{
+			listArticlesByGroup(stage, viewByGroupTf.getText());
+			}
+			else {
+				showAlert("Error","Please enter a group");
+			}
+		});
+		
 		backup.setOnAction(e -> backupArticles());
 		restore.setOnAction(e -> restoreArticles());
 		deleteArticle.setOnAction(e -> {
@@ -299,7 +322,7 @@ public class UserManagementApp extends Application {
 			}		
 		});
 		
-		layout.getChildren().addAll(action,listArticles,createArticle,deleteArticleInput,deleteArticle,search,editArticles,backup, restore, backupByGroup, backupGroup, restoreByGroup, restoreGroup,goBack);
+		layout.getChildren().addAll(action,listArticles,createArticle,deleteArticleInput,deleteArticle, editArticles, backup, restore, backupByGroup, backupGroup, restoreByGroup, restoreGroup, goBack);
 		Scene scene = new Scene(layout, 500, 600);
 		stage.setScene(scene);
 		stage.show();
@@ -826,7 +849,7 @@ public class UserManagementApp extends Application {
 		Button exit = new Button("Save and Exit");
 		Button manage = new Button("Manage My Articles");
 		
-		manage.setOnAction(e -> );
+		manage.setOnAction(e -> manageArticlesPage(stage));
 		logoutButton.setOnAction(e -> {
 			currentUser = null;
 			showLoginPage(stage);
@@ -836,26 +859,115 @@ public class UserManagementApp extends Application {
 			save();
 			Platform.exit();
 		});
-		layout.getChildren().addAll(welcomeLabel, articles, logoutButton, exit);
+		layout.getChildren().addAll(welcomeLabel, articles, manage, logoutButton, exit);
 		Scene scene = new Scene(layout, 300, 200);
 		stage.setScene(scene);
+		stage.show();
 	}
 	
 	public void manageArticlesPage(Stage stage)
 	{
-		Articles temp;
-		for(Map.Entry<String, Articles> entry : articles.entrySet())
-		{
-			temp = entry.getValue();
-			if(temp.isSpecial())
-			{
-				if(temp.getAllowedUsers().contains(currentUser.getUsername()))
-				{
-					
-				}
-			}
-		}
+		VBox layout = new VBox(10);
+		layout.setPadding(new Insets(20,20,20,20));
 		
+		Label titleLabel = new Label("Enter the title of the article you wish to edit");
+		TextField titleIn = new TextField();
+		Label prompt = new Label("Enter the username you wish to add to this article");
+		TextField usernameIn = new TextField();
+		Button submit = new Button("Submit");
+		Button goBack = new Button("Go Back");
+		Button edit = new Button("Edit contents of an article");
+		//button actions
+		edit.setOnAction(e -> editArticlePage(stage));
+		submit.setOnAction(e -> {
+			String t = titleIn.getText();
+			String u = usernameIn.getText();
+			if(t.equals("") || (u.equals(""))) 
+				showAlert("Error", "Not all fields have been filled out");
+			else
+			{
+				if(articles.get(t).isUserAllowed(currentUser.getUsername()))
+					articles.get(t).setAllowedUsers(u);
+				else
+					showAlert("Error", "You do not have access to this article");
+			}
+			
+		});
+		goBack.setOnAction(e -> showHomePage(stage, currentUser.getRoles().getFirst()));
+		
+		layout.getChildren().addAll(titleLabel, titleIn, prompt, usernameIn, submit, edit, goBack);
+		Scene scene = new Scene(layout, 500, 500);
+		stage.setScene(scene);
+		stage.show();
+	}
+	
+	private void editArticlePage(Stage stage)
+	{
+		VBox layout = new VBox(10);
+		layout.setPadding(new Insets(20,20,20,20));
+		
+		
+		//page elements
+		Label command3 = new Label("Enter the title of the article you wish to edit");
+		TextField input2 = new TextField();
+		String[] type = {"Title", "Description", "Keywords", "Authors", "body", "References", "Group", "Level"};
+		ComboBox<String> values = new ComboBox<>(FXCollections.observableArrayList(type));
+		Label command = new Label("Enter the new information");
+		Label command2 = new Label("Choose what you wish to edit");
+		Button submit = new Button("Submit");
+		TextField input = new TextField();
+		Button goBack = new Button("Go Back");
+		
+		//button actions
+		submit.setOnAction(e -> {
+			String title = input2.getText();
+			if(!title.equals(""))
+			{
+				if(articles.get(title) != null)
+				{
+					if(articles.get(title).isUserAllowed(currentUser.getUsername()))
+					{
+						String value = values.getValue();
+						String result = input.getText();
+						if(value.equals("Title"))					
+							articles.get(title).setTitle(result);	
+					
+						else if(value.equals("Description"))					
+							articles.get(title).setDescription(result);	
+					
+						else if(value.equals("Keywords"))
+							articles.get(title).setKeywords(result);
+					
+						else if(value.equals("Authors"))
+							articles.get(title).setAuthor(result);
+					
+						else if(value.equals("Group"))
+							articles.get(title).setGroup(result);
+					
+						else if(value.equals("Level"))
+						{
+							if( result.equals("Beginner") || result.equals("Intermediate") || result.equals("Advanced") || result.equals("Expert"))
+								articles.get(title).setLevel(result);
+							else
+								showAlert("Error", "Imporper level entered");
+						}
+					
+					}
+					else
+						showAlert("Error", "This article does not exist");
+			}
+				else
+					showAlert("Error", "You do not have the right to edit this article");
+			}
+			else
+				showAlert("Error", "Please fill out the title of the article you wish to edit");
+		});
+		
+		goBack.setOnAction(e -> showHomePage(stage, currentUser.getRoles().getFirst()));
+		layout.getChildren().addAll(command3, input2, command2, values, command, input, submit, goBack);
+		Scene scene = new Scene(layout, 500, 500);
+		stage.setScene(scene);
+		stage.show();
 	}
 	
 	private void showHomePageStudent(Stage stage, String role) {		//role page for student role
@@ -1161,6 +1273,7 @@ public class UserManagementApp extends Application {
 				String encryptedBody = Base64.getEncoder().encodeToString(
 						encryptionHelper.encrypt(b.getBytes(), EncryptionUtils.getInitializationVector(t.toCharArray())));
 				Articles newArticle = new Articles(t, d, k, a, encryptedBody, r, g, l, isSpecial);
+				newArticle.addAllowedUser(currentUser.getUsername());
 				if(articles.get(t) == null)			//if article is unique then add it to system else show error
 				{
 					articles.put(t, newArticle);
