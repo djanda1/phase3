@@ -1,18 +1,24 @@
+
 package application;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 public class Articles {
-	private String title, description, keywords, authors, body, references, group, level;
-	private int id, idForSearch;
+	private String title, description, keywords, authors, body, references, group;
+	private boolean special;
+	private int id;
+    private Set<String> allowedUsers;
+
+	
 	//default constructor
 	public Articles()
 	{
+		this.allowedUsers = new HashSet<>(); //initialize set
 	}
 	
 	//overloaded constructor
-	public Articles(String title, String description, String keywords, String authors, String body, String references, String group, String level)
+	public Articles(String title, String description, String keywords, String authors, String body, String references, String group, boolean special)
 	{
 		this.title = title;
 		this.authors = authors;
@@ -20,14 +26,15 @@ public class Articles {
 		this.keywords = keywords;
 		this.description = description;
 		this.references = references;
+		this.special = special;
 		id = 0;
+		this.allowedUsers = new HashSet<>(); //initialize set
 		for(int i = 0; i < title.length(); i++)
 		{
 			char ch = title.charAt(i);
 			this.id += (int)ch;
 		}
 		this.group = group;
-		this.level = level;
 	}
 	
 	
@@ -77,33 +84,39 @@ public class Articles {
 		this.body = body;
 	}
 	
-	public String getLevel()
+	public boolean isSpecial() 
 	{
-		return this.level;
-	}
-	
-	public int getIdForSearch()
-	{
-		return this.idForSearch;
-	}
-	
-	public void setIdForSearch(int i)
-	{
-		this.idForSearch = i;
-	}
+        return this.special;
+    }
+
+    public void setSpecial(boolean special) 
+    { 
+        this.special = special;
+    }
+    
+    public void addAllowedUser(String username) {
+        this.allowedUsers.add(username);
+    }
+    
+    public void setAllowedUsers(Set<String> allowedUsers) {
+        this.allowedUsers = allowedUsers;
+    }
+    
+    public Set<String> getAllowedUsers() {
+        return allowedUsers;
+    }
+    
+    public boolean isUserAllowed(String username) {
+        return this.allowedUsers.contains(username);
+    }
+    
 	public String toString()
 	{
-		String text = "";
-		
-		if(idForSearch > 0)
-			text += this.idForSearch + "\n";
-		text += "Title: " + this.title + "\n"
+		return "Title: " + this.title + "\n"
 				+ "Authors: " + this.authors + "\n"
 				+ "Description: " + this.description + "\n"
 				+ "Group: " + this.group + "\n"
-				+ "ID: " + this.id + "\n"
-				+ "Level: " + this.level + "\n";
-		return text;
+				+ "ID: " + this.id + "\n";
 	}
 	
 	public String toStringFull()
