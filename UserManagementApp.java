@@ -245,7 +245,7 @@ public class UserManagementApp extends Application {
 		Button listArticles = new Button("List Articles");
 		Button createArticle = new Button("Create");
 		Button deleteArticle = new Button("Delete");
-		Button search = new Button("Search articles");
+		Button search = new Button("Search Articles");
 		Button goBack = new Button("Go Back");
 		Button backup = new Button("Backup all articles");
 		Button restore = new Button("Restore all articles from backup");
