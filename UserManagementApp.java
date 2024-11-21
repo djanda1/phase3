@@ -245,24 +245,19 @@ public class UserManagementApp extends Application {
 		Button listArticles = new Button("List Articles");
 		Button createArticle = new Button("Create");
 		Button deleteArticle = new Button("Delete");
-		Button viewArticle = new Button("View Article");
+		Button search = new Button("Search articles");
 		Button goBack = new Button("Go Back");
-		Button viewByGroup = new Button("View articles by group");
 		Button backup = new Button("Backup all articles");
 		Button restore = new Button("Restore all articles from backup");
 		Button backupGroup = new Button("Backup Group");
 		Button restoreGroup = new Button("Restore Group");
 		//text fields for buttons
 		TextField deleteArticleInput = new TextField();
-		TextField viewArticleInput = new TextField();
-		TextField viewByGroupTf = new TextField();
 		TextField backupByGroup = new TextField();
 		TextField restoreByGroup = new TextField();
 		//Set prompts for text fields
 		backupByGroup.setPromptText("Enter the group you wish to backup");
 		deleteArticleInput.setPromptText("Enter the title of the article you wish to delete");
-		viewArticleInput.setPromptText("Enter the title of the article you wish to view");
-		viewByGroupTf.setPromptText("Enter the group you wish to view");
 		restoreByGroup.setPromptText("Enter the group you wish to restore");
 		
 		//button actions
@@ -270,27 +265,9 @@ public class UserManagementApp extends Application {
 			goBack.setOnAction(e ->showAdminPage(stage, "admin"));
 		else if(currentUser.getRoles().get(0).equals("Instructor"))
 			goBack.setOnAction(e ->showHomePageInstructor(stage, "Instructor"));
-		viewArticle.setOnAction(e -> {
-			String name = viewArticleInput.getText();
-			Articles articleName = articles.get(name);
-			if(articleName != null)
-			{
-				articleWindow(stage, name);
-			}
-			else
-				showAlert("Error", "The article you entered does not exist");
-		});
 		createArticle.setOnAction(e -> createArticlePage(stage));
 		listArticles.setOnAction(e -> listArticles(stage));
-		viewByGroup.setOnAction(e -> {
-			if(viewByGroupTf.getText().isEmpty())	{
-			listArticlesByGroup(stage, viewByGroupTf.getText());
-			}
-			else {
-				showAlert("Error","Please enter a group");
-			}
-		});
-		
+		search.setOnAction(e -> studentSearchPage(stage));
 		backup.setOnAction(e -> backupArticles());
 		restore.setOnAction(e -> restoreArticles());
 		deleteArticle.setOnAction(e -> {
@@ -320,7 +297,7 @@ public class UserManagementApp extends Application {
 			}		
 		});
 		
-		layout.getChildren().addAll(action,listArticles,createArticle,deleteArticleInput,deleteArticle,viewArticleInput,viewArticle, viewByGroupTf, viewByGroup, backup, restore, backupByGroup, backupGroup, restoreByGroup, restoreGroup, goBack);
+		layout.getChildren().addAll(action,listArticles,createArticle,deleteArticleInput,deleteArticle,search, backup, restore, backupByGroup, backupGroup, restoreByGroup, restoreGroup,goBack);
 		Scene scene = new Scene(layout, 500, 600);
 		stage.setScene(scene);
 		stage.show();
