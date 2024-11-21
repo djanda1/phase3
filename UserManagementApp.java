@@ -251,6 +251,7 @@ public class UserManagementApp extends Application {
 		Button restore = new Button("Restore all articles from backup");
 		Button backupGroup = new Button("Backup Group");
 		Button restoreGroup = new Button("Restore Group");
+		Button editArticles = new Button("Edit Articles");
 		//text fields for buttons
 		TextField deleteArticleInput = new TextField();
 		TextField backupByGroup = new TextField();
@@ -261,6 +262,7 @@ public class UserManagementApp extends Application {
 		restoreByGroup.setPromptText("Enter the group you wish to restore");
 		
 		//button actions
+		editArticles.setOnAction(e ->editArticlePage(stage));
 		if(currentUser.getRoles().get(0).equals("Admin"))
 			goBack.setOnAction(e ->showAdminPage(stage, "admin"));
 		else if(currentUser.getRoles().get(0).equals("Instructor"))
@@ -297,7 +299,7 @@ public class UserManagementApp extends Application {
 			}		
 		});
 		
-		layout.getChildren().addAll(action,listArticles,createArticle,deleteArticleInput,deleteArticle,search, backup, restore, backupByGroup, backupGroup, restoreByGroup, restoreGroup,goBack);
+		layout.getChildren().addAll(action,listArticles,createArticle,deleteArticleInput,deleteArticle,search,editArticles,backup, restore, backupByGroup, backupGroup, restoreByGroup, restoreGroup,goBack);
 		Scene scene = new Scene(layout, 500, 600);
 		stage.setScene(scene);
 		stage.show();
