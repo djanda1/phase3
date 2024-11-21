@@ -1,7 +1,6 @@
 package application;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -11,15 +10,13 @@ import javafx.stage.Stage;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.*;
-import java.util.Base64;
-import Encryption.EncryptionHelper;
-import Encryption.EncryptionUtils;
-
 import java.io.*;
 
 public class UserManagementApp extends Application {
-	private EncryptionHelper encryptionHelper;
 	private Map<String, User> users = new HashMap<>();
 	private Map<String, Articles> articles = new HashMap<>();
 	private User currentUser;
@@ -31,13 +28,6 @@ public class UserManagementApp extends Application {
 
 	@Override
 	public void start(Stage primaryStage) {
-		try {
-			encryptionHelper = new EncryptionHelper();
-		}
-		catch(Exception e)
-		{
-			showAlert("Error", "Could not load encryption");
-		}
 		primaryStage.setTitle("User Management Application");
 		showLoginPage(primaryStage);
 	}
@@ -52,7 +42,6 @@ public class UserManagementApp extends Application {
 		resetUserInput.setPromptText("Enter username for user you want to reset");
 		
 		Button listUsers = new Button("List Users");
-		Button helpSystem = new Button("Help System");
 		Button deleteUsers = new Button("Delete a user");
 		TextField deleteAccountInput = new TextField();
 		Button updateRoles = new Button("Update a user's role(s)");
@@ -127,11 +116,7 @@ public class UserManagementApp extends Application {
 			}
 		});
 		
-		helpSystem.setOnAction(e -> {
-			helpSystemAdmin(stage);
-		});
-		
-		layout.getChildren().addAll(listUsers, deleteAccountInput, deleteUsers, resetUserInput, resetUser, generatePasswordStudent, generatePasswordInstructor, generatePasswordAdmin, generatePasswordStuIns,articles,articleGroup,specialArticles,helpSystem,logout);
+		layout.getChildren().addAll(listUsers, deleteAccountInput, deleteUsers, resetUserInput, resetUser, generatePasswordStudent, generatePasswordInstructor, generatePasswordAdmin, generatePasswordStuIns,articles,articleGroup,specialArticles,logout);
 		Scene scene = new Scene(layout, 600, 600);
 		stage.setScene(scene);
 		listUsers.setOnAction(e ->listUsers(stage));
@@ -143,81 +128,44 @@ public class UserManagementApp extends Application {
 		VBox layout = new VBox(10);
 		layout.setPadding(new Insets(20,20,20,20));
 		
-		Button btArticles = new Button("List articles in this group");
-		Button btAdmins = new Button("List admins given rights to this group");
-		Button btInstructors = new Button("List instructors given viewing rights to this group");
-		Button btAdminInstructors = new Button("List instructors given rights to this group");
-		Button btStudents = new Button("List students given viewing rights to this group");
+		Label lbArticles = new Label("List articles in this group.");
+		Button btArticles = new Button("List Articles");
+		
+		
+		Label lbAdmins = new Label("List admins given rights to this group.");
+		Button btAdmins = new Button("List Admins");
+		
+		
+		Label lbInstructors = new Label("List instructors given viewing rights to this group.");
+		Button btInstructors = new Button("List Instructors");
+		
+		
+		Label lbAdminInstructors = new Label("List instructors given rights to this group.");
+		Button btAdminInstructors = new Button("List Instructors");
+		
+		
+		Label lbStudents = new Label("List students given viewing rights to this group.");
+		Button btStudents = new Button("List Students");
+		
 		
 		Button goBack = new Button("Go Back");
 		goBack.setOnAction(e ->showAdminPage(stage, "admin"));
 		
-		layout.getChildren().addAll(btArticles,btAdmins,btInstructors,btAdminInstructors,btStudents,goBack);
+		
+		layout.getChildren().addAll(lbArticles,btArticles,lbAdmins,btAdmins,lbInstructors,btInstructors,lbAdminInstructors,btAdminInstructors,lbStudents,btStudents,goBack);
 		Scene scene = new Scene(layout, 400, 400);
 		stage.setScene(scene);
 		stage.show();
 	}
+	
+	
 	
 	private void helpSystemPage(Stage stage)	{
 		VBox layout = new VBox(10);
 		layout.setPadding(new Insets(20,20,20,20));
 		
-		String[] type = {"General", "Specific"};
-		ComboBox<String> comboBox = new ComboBox<>(FXCollections.observableArrayList(type));
-		comboBox.getSelectionModel().selectFirst();
-		String[] returnType = {"All","Beginner", "Intermediate", "Advanced", "Expert"};
-		ComboBox<String> returnBox = new ComboBox<>(FXCollections.observableArrayList(returnType));
-		returnBox.getSelectionModel().selectFirst();
-		
-		Label title = new Label("Welcome to the help system.");
-		Label lbtype = new Label("Please select the type of message you need help with\nand level of content you would like to see.");
-		Label search = new Label("Enter your message below.");
-		TextField help = new TextField();
-		help.setPromptText("Enter your message here.");
-		Button submit = new Button("Submit");
-		submit.setOnAction(e -> {
-			String txt = help.getText();
-			if(!txt.equals("")) 
-			{
-				saveRequest(comboBox.getValue(), returnBox.getValue(), txt);
-				showAlert("Success", "Your request was successfully submitted please be patient while admins take a look at your request.");
-				showHomePageStudent(stage, "student");
-			}
-			else
-				showAlert("Error", "No information provided");
-		});
-		Button goBack = new Button("Go Back");
-		goBack.setOnAction(e ->showHomePageStudent(stage, "student"));
-
-		layout.getChildren().addAll(title,lbtype,comboBox,returnBox,search,help,submit,goBack);
-		Scene scene = new Scene(layout, 400, 400);
-		stage.setScene(scene);
-		stage.show();
-		
-	}
-	
-	private void helpSystemAdmin(Stage stage)
-	{
-		VBox layout = new VBox(10);
-		layout.setPadding(new Insets(20,20,20,20));
-		
-		//Elements
-		Label label = new Label("Help System Student Requests:");
-		Button goBack = new Button("Go Back");
-		//Set text to have list of help system requests
-		String t = loadRequests();
-		if(t.equals(""))
-		{
-			t = "No requests at the moment";
-		}
-		Label text = new Label(t);
-		//button actions
-		goBack.setOnAction(e -> showAdminPage(stage, "admin"));
-		
-		layout.getChildren().addAll(label, text, goBack);
-		Scene scene = new Scene(layout, 400, 400);
-		stage.setScene(scene);
-		stage.show();
+		Label title = new Label("Welcome to the help system");
+		Label search = new Label("What key words would you like to search?");
 		
 	}
 	
@@ -306,7 +254,7 @@ public class UserManagementApp extends Application {
 			}		
 		});
 		
-		layout.getChildren().addAll(action,listArticles,createArticle,deleteArticleInput,deleteArticle,viewArticleInput,viewArticle, viewByGroupTf, viewByGroup, backup, restore, backupByGroup, backupGroup, restoreByGroup, restoreGroup, goBack);
+		layout.getChildren().addAll(action,listArticles,createArticle,deleteArticleInput,deleteArticle,viewArticleInput,viewArticle, viewByGroupTf, viewByGroup, backup, restore, backupByGroup, backupGroup, restoreByGroup, restoreGroup);
 		Scene scene = new Scene(layout, 500, 600);
 		stage.setScene(scene);
 		stage.show();
@@ -317,48 +265,19 @@ public class UserManagementApp extends Application {
 		VBox layout = new VBox(10);
 		layout.setPadding(new Insets(20,20,20,20));
 		Articles article = articles.get(ArticleName);
-		String encryptedBody = article.getBody();
-		char[] decryptedBody;
-		try {
-		decryptedBody = EncryptionUtils.toCharArray(				//decrypt the body to show in gui
-				encryptionHelper.decrypt(
-						Base64.getDecoder().decode(
-								encryptedBody
-						), 
-						EncryptionUtils.getInitializationVector(article.getTitle().toCharArray())
-				)	
-		);
-		}
-		catch (Exception e) {
-			showAlert("Error", e.toString());
-			decryptedBody = null;
-		}
-		//text field for article text
-		String text = String.valueOf(decryptedBody);
 		
+		//text field for article text
 		TextArea articleBody = new TextArea();
-		articleBody.setText(text);
-		Arrays.fill(decryptedBody, '0');	//fill the decrypted array to avoid leaks
-		text = "";							//replace text with "" to avoid leaks
+		articleBody.setText(article.getBody());
+		
 		//buttons
 		Button goBack = new Button("Go Back");
 		Button updateArticle = new Button("Update Article");
-		
-		updateArticle.setOnAction(e -> {				//update article with new body but also encrypt it
-			try {
-			String newBody = articleBody.getText();
-			String body = Base64.getEncoder().encodeToString(
-					encryptionHelper.encrypt(newBody.getBytes(), EncryptionUtils.getInitializationVector(article.getTitle().toCharArray())));
-			
-			article.setBody(body);
+		updateArticle.setOnAction(e -> {
+			article.setBody(articleBody.getText());
 			save();
 			showAlert("Success", "The article has been updated");
 			articleHomePage(stage);
-			}
-			catch(Exception ee)
-			{
-				showAlert("Error", ee.toString());
-			}
 		});
 		//button actions
 		goBack.setOnAction(e -> articleHomePage(stage));
@@ -700,7 +619,8 @@ public class UserManagementApp extends Application {
 	}
 	
 
-	private void handleInviteCode(Stage stage, String inviteCode) {		//method to handle invite code		//oneTimePassword, oneTimeStudent, oneTimeInstructor, oneTimeAdmin, oneTimeStudentIns;
+	private void handleInviteCode(Stage stage, String inviteCode) {		//method to handle invite code
+		//oneTimePassword, oneTimeStudent, oneTimeInstructor, oneTimeAdmin, oneTimeStudentIns;
 		
 		if (inviteCode.equals(oneTimeAdmin) && !inviteCode.equals("")) {		//handles one time password for admin
 			showAccountCreationPage(stage, List.of("Admin"));
@@ -848,229 +768,15 @@ public class UserManagementApp extends Application {
 
 		Label welcomeLabel = new Label("Welcome, " + currentUser.getDisplayName() + " (" + role + ")");
 		Button logoutButton = new Button("Log Out");
-		Button helpSystem = new Button("Help System");
-		Button quit = new Button("Save and Exit");
-		Button search = new Button("Search for Articles");
-		
-		//button actions
-		logoutButton.setOnAction(e -> {			//logout of student account will lead back to login page
-			currentUser = null;
-			showLoginPage(stage);
-		});
-		
-		helpSystem.setOnAction(e-> helpSystemPage(stage));		//leads you to help system page
 		logoutButton.setOnAction(e -> {
 			currentUser = null;
 			showLoginPage(stage);
 		});
-		search.setOnAction(e -> studentSearchPage(stage));
-		
-		quit.setOnAction(e ->{
-			save();
-			Platform.exit();
-		});
-		
-		layout.getChildren().addAll(welcomeLabel, helpSystem, search, logoutButton, quit);
-		Scene scene = new Scene(layout, 400, 400);
+
+		layout.getChildren().addAll(welcomeLabel, logoutButton);
+		Scene scene = new Scene(layout, 300, 200);
 		stage.setScene(scene);
 	}
-	
-	private void studentSearchPage(Stage stage)
-	{
-		VBox layout = new VBox(10);
-		layout.setPadding(new Insets(20,20,20,20));
-		
-		String[] levels = {"All", "Beginner", "Intermediate", "Advanced", "Expert"};		//combo box values
-		
-		//Page elements
-		Label prompt = new Label("Please provide the details for your search");
-		ComboBox<String> levelCB = new ComboBox<>(FXCollections.observableArrayList(levels));		//combo box for them to choose level
-		levelCB.getSelectionModel().selectFirst();
-		Label searchLabel = new Label("Enter Keywords for your search");
-		TextField userSearch = new TextField();
-		Label groupLabel = new Label("Enter the group you wish to search or leave blank to search all groups");
-		TextField groupSearch = new TextField();
-		Label idLabel = new Label("Enter id for specific aritcle (Optional)");
-		TextField idTF = new TextField("0");
-		Button search = new Button("Search");
-		Button goBack = new Button("Go back");
-		
-		//button action
-		search.setOnAction(e ->{
-			String l = levelCB.getValue();
-			String g = groupSearch.getText();
-			String k = userSearch.getText();
-			int id = Integer.parseInt(idTF.getText());
-			Map<String, Articles> map = returnSearch(l, g, k, id);
-			if(map.size() > 0)
-				searchResultPage(stage, map);
-			else
-				showAlert("Error", "No results found");
-		});
-		
-		goBack.setOnAction(e -> showHomePageStudent(stage, "student"));
-		
-		layout.getChildren().addAll(prompt, levelCB, groupLabel, groupSearch, searchLabel, userSearch, idLabel, idTF, search, goBack);
-		Scene scene = new Scene(layout, 500, 500);
-		stage.setScene(scene);
-	}
-	
-	
-	
-	private void searchResultPage(Stage stage, Map<String, Articles> artMap)
-	{
-		//vertical box for page elements
-		VBox layout = new VBox(10);
-		layout.setPadding(new Insets(20,20,20,20));
-		
-		//page elements
-		ObservableList<Articles> articleList = FXCollections.observableArrayList(artMap.values());
-		ListView<Articles> listView = new ListView<>(articleList);
-		Label prompt = new Label("Enter the number of the article you wish to see");
-		TextField tf = new TextField();
-		tf.setPromptText("Choose list number of article you wish to see");
-		Button view = new Button("View Article");
-		Button goBack = new Button("Go back to search page");
-		
-		//button actions
-		goBack.setOnAction(e -> {
-			studentSearchPage(stage);
-			});
-		
-		view.setOnAction(e -> {
-			int i = Integer.parseInt(tf.getText());
-			if(i > 0)
-			{
-				Articles temp;
-				for(Map.Entry<String, Articles> entry : artMap.entrySet())
-				{
-					temp = entry.getValue();
-					if(temp.getIdForSearch() == i)
-						viewArticle(stage, temp, artMap);
-				}
-			}
-			else
-				showAlert("Error", "Could not find article");
-		});
-		
-		//set scene
-		layout.getChildren().addAll(listView, prompt, tf, view, goBack);
-		Scene scene = new Scene(layout, 400, 400);
-		stage.setScene(scene);
-		stage.show();
-		
-	}
-	
-	private void viewArticle(Stage stage, Articles art, Map<String, Articles> searchResult)
-	{
-		//vertical box to hold elemetns
-		VBox layout = new VBox(10);
-		layout.setPadding(new Insets(20,20,20,20));
-		
-		//page elements
-		Label artLabel = new Label(art.getTitle());
-		String encryptedBody = art.getBody();
-		char[] decryptedBody;
-		try {
-		decryptedBody = EncryptionUtils.toCharArray(				//decrypt the body to show in gui
-				encryptionHelper.decrypt(
-						Base64.getDecoder().decode(
-								encryptedBody
-						), 
-						EncryptionUtils.getInitializationVector(art.getTitle().toCharArray())
-				)	
-		);
-		}
-		catch (Exception e) {
-			showAlert("Error", e.toString());
-			decryptedBody = null;
-		}
-		
-		
-		Button goBack = new Button("Go Back");
-		String text = String.valueOf(decryptedBody);
-		Arrays.fill(decryptedBody, '0');     				//fill decrypted array with 0 to prevent leaks
-		TextArea ta = new TextArea(text);
-		//button action
-		goBack.setOnAction(e ->searchResultPage(stage, searchResult));
-		
-		//set the scene
-		layout.getChildren().addAll(artLabel, ta, goBack);
-		Scene scene = new Scene(layout, 400, 400);
-		stage.setScene(scene);
-		stage.show();
-	}
-	
-	private Map<String, Articles> returnSearch(String level, String group, String keyword, int id)
-	{
-		Map<String, Articles> artMap = new HashMap<>();
-		Articles temp;
-		int i = 1;
-		for(Map.Entry<String, Articles> entry : articles.entrySet())
-		{
-			temp = entry.getValue();
-			if( (level.equalsIgnoreCase("All") || level.equalsIgnoreCase(temp.getLevel())) && (group.equals("") || (group.equalsIgnoreCase(temp.getGroup())))) 		//if article matches group or level user inputed
-			{
-				String des = temp.getDescription();
-				String t = temp.getTitle();
-				String a = temp.getAuthors();
-				String key = temp.getKeywords();
-				
-				
-				if( (!keyword.equals("")) && ((findSubstring(des, keyword) >= 0) || (findSubstring(t, keyword) >= 0) || (findSubstring(a, keyword) >= 0) || (findSubstring(key, keyword) >= 0)))		//if article contains any substring with keyword student produced
-				{
-					temp.setIdForSearch(i);
-					artMap.put(temp.getTitle(), temp);
-					i++;
-				}
-				else if((keyword.equals("")))
-				{
-					temp.setIdForSearch(i);
-					artMap.put(temp.getTitle(), temp);
-					i++;
-				}
-			}
-			
-			if(id > 0)				//check if id user provided == id for articles
-			{
-				if(id == temp.getId())
-				{
-					temp.setIdForSearch(i);
-					artMap.put(temp.getTitle(), temp);
-					i++;
-				}
-			}
-			
-			
-			
-		}
-		
-		return artMap;
-	}
-	
-	private int findSubstring(String full, String sub)		//function to check if sub is a substring of full
-	{
-		int n = full.length();
-		int m = sub.length();
-		
-		
-		for(int i = 0; i <= n - m; i++)				//iterate through full string	
-		{
-			int j;
-			for(j = 0; j < m; j++)					//iterate through sub and full if they don't match move on
-			{
-				if(Character.toLowerCase(full.charAt(i + j)) != Character.toLowerCase(sub.charAt(j)))
-					break;
-			}
-			
-			if(j == m) 
-			{
-				return i;
-			}
-		}
-		return -1;		//if they don't match return -1
-	}
-	
 
 	private void showAlert(String title, String message) {		//alert method to be able to let user know if any errors
 		Alert alert = new Alert(Alert.AlertType.INFORMATION);
@@ -1084,10 +790,6 @@ public class UserManagementApp extends Application {
 	{
 		VBox layout = new VBox(10);
 		layout.setPadding(new Insets(20,20,20,20));
-		
-		String[] levels = {"Beginner", "Intermediate", "Advanced", "Expert"};	//strings for combo box to determine level
-		
-		//Page elements
 		Label prompt = new Label("Please fill out article's information: ");		//prompts to add article
 		TextField titleTf = new TextField();
 		TextField authorsTf = new TextField();
@@ -1096,8 +798,14 @@ public class UserManagementApp extends Application {
 		TextField descriptionTf = new TextField();
 		TextField referencesTf = new TextField();
 		TextField groupTf = new TextField();
-		ComboBox<String> levelCB = new ComboBox<>(FXCollections.observableArrayList(levels));
-		levelCB.getSelectionModel().selectFirst();
+		/////////////////////////////
+		CheckBox specialCheckBox = new CheckBox("Mark as a special article");
+		TextField specialInvitesTf = new TextField();
+		specialInvitesTf.setVisible(false);
+		specialCheckBox.setOnAction(e -> specialInvitesTf.setVisible(specialCheckBox.isSelected()));
+		specialInvitesTf.setPromptText("Enter usernames seperated by commas of desired members to add to articles");
+		//////////////////////////////
+		
 		titleTf.setPromptText("Enter the title of the article");
 		authorsTf.setPromptText("Enter the author(s) of the article");
 		bodyTf.setPromptText("Enter the body of the article");
@@ -1107,23 +815,30 @@ public class UserManagementApp extends Application {
 		groupTf.setPromptText("Enter the group of the article");
 		Button addButt = new Button("Submit Article");
 		Button goBack = new Button("Go Back");
-		
-		//button actions
 		addButt.setOnAction(e -> {				//add article button action
 			String t = titleTf.getText();
 			String a = authorsTf.getText();
 			String b = bodyTf.getText();
 			String k = keywordsTf.getText();
-			String d = keywordsTf.getText();
+			String d = descriptionTf.getText();
 			String r = referencesTf.getText();
 			String g = groupTf.getText();
-			String l = levelCB.getValue();
-			try {
+			boolean isSpecial = specialCheckBox.isSelected();
 			if(!t.equals("") && !a.equals("") && !b.equals("") && !k.equals("") && !d.equals("") && !r.equals("") && !g.equals(""))		//if textfields are filled out
 			{
-				String encryptedBody = Base64.getEncoder().encodeToString(
-						encryptionHelper.encrypt(b.getBytes(), EncryptionUtils.getInitializationVector(t.toCharArray())));
-				Articles newArticle = new Articles(t, d, k, a, encryptedBody, r, g, l);
+				Articles newArticle = new Articles(t, d, k, a, b, r, g, isSpecial);
+				/////////////
+				if (isSpecial) {
+	                newArticle.addAllowedUser(currentUser.toString()); //give creator permission
+	                String specialInvites = specialInvitesTf.getText();
+	                if (!specialInvites.isEmpty()) {
+	                    for (String user : specialInvites.split(",")) {
+	                        newArticle.addAllowedUser(user.trim());
+	                    }
+	                }
+				}
+	           //////////////////     
+				
 				if(articles.get(t) == null)			//if article is unique then add it to system else show error
 				{
 					articles.put(t, newArticle);
@@ -1139,77 +854,15 @@ public class UserManagementApp extends Application {
 			{
 				showAlert("Error", "Not all text fields have been filled out");
 			}
-		}
-			catch (Exception ee){
-				showAlert("Error", ee.toString());
-			}
 		});
-		
-	
 	
 		//button actions
 		goBack.setOnAction(e ->articleHomePage(stage));
 		
-		layout.getChildren().addAll(prompt, titleTf, authorsTf, bodyTf, keywordsTf, descriptionTf, referencesTf, groupTf, levelCB, addButt, goBack);
+		layout.getChildren().addAll(prompt, titleTf, authorsTf, bodyTf, keywordsTf, descriptionTf, referencesTf, groupTf, addButt, goBack);
 		Scene scene = new Scene(layout, 500, 500);
 		stage.setScene(scene);
 		
-	}
-	
-	private void saveRequest(String type, String level, String request)		//method to save student help requests
-	{
-		try {
-			File myObj = new File("requests.txt");
-			if (myObj.createNewFile())
-			{
-				System.out.println("New requeset file created");
-			}
-			
-			FileWriter writer = new FileWriter("requests.txt", true);
-			BufferedWriter myWriter = new BufferedWriter(writer);
-			myWriter.newLine();
-			myWriter.write(type);
-			myWriter.newLine();
-			myWriter.write(level);
-			myWriter.newLine();
-			myWriter.write(request);
-			myWriter.newLine();
-			myWriter.close();
-		}
-		catch(IOException e)
-		{
-			showAlert("Error", e.toString());
-		}
-		
-	}
-	
-	private String loadRequests()			//loading requests given by students to be displayed to admins
-	{
-		try {
-			File myObj = new File("requests.txt");		// load request file
-			if(myObj.createNewFile())		//if file didn't exist
-			{
-				return "No requests at the moment";
-			}
-			else
-			{
-				String t = "";
-				Scanner reader = new Scanner(myObj);
-				while(reader.hasNextLine())
-				{
-					t += reader.nextLine();
-					t += "\n";
-				}
-				reader.close();
-				return t;
-			}
-			
-		}
-		catch(IOException e)
-		{
-			showAlert("Error", e.toString());
-			return null;
-		}
 	}
 	
 	private void save()			//save database
@@ -1271,9 +924,21 @@ public class UserManagementApp extends Application {
 		    	  myWriter.newLine();
 		    	  myWriter.write(tempA.getReferences());
 		    	  myWriter.newLine();
-		    	  myWriter.write(tempA.getLevel());
+		    	  /////////////////////////////////
+		    	  if(tempA.isSpecial())
+		    		  myWriter.write("1");
+		    	  else
+		    		  myWriter.write("0");
+		    	  myWriter.newLine();;
 		    	  myWriter.newLine();
 		    	  
+		    	  if (tempA.isSpecial()) {
+		                myWriter.write(String.join(",", tempA.getAllowedUsers())); 
+		            } else {
+		                myWriter.write("");
+		            }
+		            myWriter.newLine();
+		    	  //////////////////////////////////
 		      }
 		      myWriter.close();
 		    } catch (IOException e) {
@@ -1351,9 +1016,20 @@ public class UserManagementApp extends Application {
 		        	String k = line;
 		        	line = reader.nextLine();
 		        	String r = line;
+		        	
+		        	//////////////////////
 		        	line = reader.nextLine();
-		        	String l = line;
-		        	Articles newArt = new Articles(t, d, k, a, b, r, g, l);
+	                boolean isSpecial = (line.equals("1"));
+	                Set<String> allowedUsers = new HashSet<>();
+	                if (isSpecial) {
+	                    line = reader.nextLine();
+	                    if (!line.isEmpty()) {
+	                        allowedUsers.addAll(Arrays.asList(line.split(",")));
+	                    }
+	                }
+		        	////////////////////////
+	                
+		        	Articles newArt = new Articles(t, d, k, a, b, r, g);
 		        	articles.put(t, newArt);
 		        }
 		        reader.close();
@@ -1412,8 +1088,6 @@ public class UserManagementApp extends Application {
 	    	  myWriter.newLine();
 	    	  myWriter.write(tempA.getReferences());
 	    	  myWriter.newLine();
-	    	  myWriter.write(tempA.getLevel());
-	    	  myWriter.newLine();
 	    	  
 	      }
 	      myWriter.close();
@@ -1457,8 +1131,6 @@ public class UserManagementApp extends Application {
 		    		  myWriter.newLine();
 		    		  myWriter.write(tempA.getReferences());
 		    		  myWriter.newLine();
-		    		  myWriter.write(tempA.getLevel());
-		    		  myWriter.newLine();
 		    	  }
 		      }
 			myWriter.close();
@@ -1500,9 +1172,7 @@ public class UserManagementApp extends Application {
 		        	String k = line;
 		        	line = reader.nextLine();
 		        	String r = line;
-		        	line = reader.nextLine();
-		        	String l = line;
-		        	Articles newArt = new Articles(t, d, k, a, b, r, g, l);
+		        	Articles newArt = new Articles(t, d, k, a, b, r, g);
 		        	if(articles.get(t) == null)				//only restore article if it does not already exist in real time system
 		        		articles.put(t, newArt);
 		        }
@@ -1544,9 +1214,7 @@ public class UserManagementApp extends Application {
 		        	String k = line;
 		        	line = reader.nextLine();
 		        	String r = line;
-		        	line = reader.nextLine();
-		        	String l = line;
-		        	Articles newArt = new Articles(t, d, k, a, b, r, g, l);
+		        	Articles newArt = new Articles(t, d, k, a, b, r, g);
 		        	if(articles.get(t) == null)				//only restore article if it does not already exist in real time system
 		        		articles.put(t, newArt);
 		        }
