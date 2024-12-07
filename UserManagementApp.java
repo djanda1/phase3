@@ -1025,17 +1025,35 @@ public class UserManagementApp extends Application {
 		Button search = new Button("Search");
 		Button goBack = new Button("Go back");
 		
-		//button action
 		search.setOnAction(e ->{
 			String l = levelCB.getValue();
 			String g = groupSearch.getText();
 			String k = userSearch.getText();
 			int id = Integer.parseInt(idTF.getText());
 			Map<String, Articles> map = returnSearch(l, g, k, id);
-			if(map.size() > 0)
-				searchResultPage(stage, map);
-			else
-				showAlert("Error", "No results found");
+			if (map.size() > 0 && id > 0) {
+				
+	            Articles article = null; 
+	            for (Articles a : map.values()) { //iterate to find article from ID
+	                if (id == a.getIdForSearch()) {
+	                    article = a;
+	                    break;  //stop at desired article from ID
+	                }
+	            }
+	            
+	            viewArticle(stage, article, map); //if a null check is added the exception is avoided but in return nothing happens
+	        } 
+			
+			else if(map.size() > 0 && id > 0){
+				showAlert("Error", "No desired ID exists");
+			}
+	       
+	        else if (map.size() > 0) { //if no id is chosen when searching
+	            searchResultPage(stage, map);  //show all relevant results without searching for ID
+	        }
+	        else {
+	            showAlert("Error", "No results found");
+	        }
 		});
 		
 		goBack.setOnAction(e -> showHomePage(stage, currentUser.getRoles().getFirst()));
@@ -1044,7 +1062,6 @@ public class UserManagementApp extends Application {
 		Scene scene = new Scene(layout, 500, 500);
 		stage.setScene(scene);
 	}
-	
 	
 	
 	private void searchResultPage(Stage stage, Map<String, Articles> artMap)
